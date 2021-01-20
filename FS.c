@@ -4,8 +4,9 @@
 
 #include "FS.h"
 
-#define B 1000  // number of blocks
+#define NUMBER_OF_BLOCKS 1000  // number of blocks
 #define BLOCK_SIZE 512
+#define MAX_FILES 10
 
-unsigned char D[B][BLOCK_SIZE];
+unsigned char D[NUMBER_OF_BLOCKS][BLOCK_SIZE];
 
