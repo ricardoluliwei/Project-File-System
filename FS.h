@@ -9,13 +9,13 @@
 
 
 // User Interface
+void seek(int i, int p);
 void create(char* name);
-void destroy();
-int open();
+void destroy(char* name);
+int open(char* name);
 void close();
 void read();
 void write();
-void seek();
 void directory();
 
 // Disk access functions
@@ -30,15 +30,20 @@ int read_bit_map(int position);
 void write_bit_map(int position, int value);
 int get_empty_block();
 
+// OFT functions
+void load_buffer(int OFT_index);
+
+// directory functions
+int exists(char* name);
+
+
 // memory access functions
 void read_memory();
 void write_memory();
 
 struct File_descriptor{
     int size; // 
-    int b0;
-    int b1;
-    int b2;
+    int block[3];
 };
 
 // entry in the directory file
@@ -51,7 +56,7 @@ struct Directory_entry{
 struct OFT_entry{
     unsigned char buffer[BLOCK_SIZE];
     int current_position; // current_position in the file from 0 to 1536
-    int file_size;
+    int size;
     int fd;
 };
 
