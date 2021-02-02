@@ -13,9 +13,9 @@ void seek(int i, int p);
 void create(char* name);
 void destroy(char* name);
 int open(char* name);
-void close();
-void read();
-void write();
+void close(int i);
+void read(int i, int m, int n);
+void write(int i, int m, int n);
 void directory();
 
 // Disk access functions

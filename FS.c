@@ -180,7 +180,9 @@ void seek(int i, int p){
     block_number = p / BLOCK_SIZE;
     previous_block_number = ofte->current_position / BLOCK_SIZE;
 
-    if(block_number != previous_block_number){
+    if(block_number >= 3){
+        write_block(fd->block[previous_block_number], ofte->buffer);
+    } else if(block_number != previous_block_number){
         // Need to change r/w buffer
         write_block(fd->block[previous_block_number], ofte->buffer);
         read_block(fd->block[block_number], ofte->buffer);
@@ -337,6 +339,125 @@ int open(char* name){
     read_block(fd->block[0], ofte->buffer);
     
     return j;
+}
+
+void close(int i){
+    if(i < 1 || i > 3){
+        perror("Invalid OFT index to close!\n");
+        return;
+    }
+
+    struct File_descriptor* fd;
+    struct OFT_entry* ofte;
+
+    ofte = &OFT[i];
+    fd = &FDT[ofte->fd];
+
+    write_block(fd->block[ofte->current_position / BLOCK_SIZE], ofte->buffer);
+    fd->size = ofte->size;
+    ofte->current_position = -1;
+
+    return;
+}
+
+void read(int i, int m, int n){
+    if(i < 1 || i > 3){
+        perror("Invalid OFT index to close!\n");
+        return;
+    }
+
+    if(m + n > BLOCK_SIZE){
+        perror("Not enough memory!\n");
+        return;
+    }
+
+    int byte_copied; // how many bytes already copied
+    int bytes; // how many bytes need to be copied in one loop
+    int current_block;
+    struct File_descriptor* fd;
+    struct OFT_entry* ofte;
+
+    ofte = &OFT[i];
+    fd = &FDT[ofte->fd];
+    
+    seek(ofte->fd, ofte->current_position);
+    byte_copied = 0;
+
+    // if n is larger than the end of file, read the whole file.
+    if(ofte->current_position + n > ofte->size)
+        n = ofte->size - ofte->current_position;
+
+    while (byte_copied < n){ 
+        bytes = 0;
+        current_block = ofte->current_position / BLOCK_SIZE;
+        
+        if(current_block != 
+        (ofte->current_position + n - byte_copied) / BLOCK_SIZE){
+            // if we need to copy next block
+            bytes = BLOCK_SIZE - (ofte->current_position % BLOCK_SIZE);
+        } else{
+            // if we don't need to copy next block
+            bytes = n - byte_copied;
+        }
+
+        // copy
+        memcpy(M[m], ofte->buffer[ofte->current_position], bytes);
+        byte_copied += bytes;
+        seek(ofte->fd, ofte->current_position + bytes);
+    }
+    
+}
+
+void write(int i, int m, int n){
+    if(i < 1 || i > 3){
+        perror("Invalid OFT index to close!\n");
+        return;
+    }
+
+    int byte_copied; // how many bytes already copied
+    int bytes; // how many bytes need to be copied in one loop
+    int current_block;
+    struct File_descriptor* fd;
+    struct OFT_entry* ofte;
+
+    ofte = &OFT[i];
+    fd = &FDT[ofte->fd];
+    
+    seek(ofte->fd, ofte->current_position);
+    byte_copied = 0;
+
+    // if current position + n is larger than the
+    // max file size, write until max size reached.
+    if(ofte->current_position + n > MAX_FILE_SIZE)
+        n = MAX_FILE_SIZE - ofte->current_position;
+
+    // if m + n is larger than 512,
+    // write until the memory ends/
+    if(m + n > BLOCK_SIZE)
+        n = BLOCK_SIZE - m;
+    
+    while (byte_copied < n){ 
+        bytes = 0;
+        current_block = ofte->current_position / BLOCK_SIZE;
+        
+        if(current_block != 
+        (ofte->current_position + n - byte_copied) / BLOCK_SIZE){
+            // if we need to copy next block
+            bytes = BLOCK_SIZE - (ofte->current_position % BLOCK_SIZE);
+            // check if the next block exists
+            if(fd->block[current_block + 1]){
+                fd->block[current_block + 1] = get_empty_block();
+            }
+        } else{
+            // if we don't need to copy next block
+            bytes = n - byte_copied;
+        }
+
+        // copy
+        memcpy(ofte->buffer[ofte->current_position], M[m], bytes);
+        byte_copied += bytes;
+        seek(ofte->fd, ofte->current_position + bytes);
+    }
 }
 
 int main(){
