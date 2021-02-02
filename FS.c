@@ -460,6 +460,24 @@ void write(int i, int m, int n){
     }
 }
 
+void directory(){
+    struct File_descriptor* fd;
+    struct OFT_entry* ofte;
+    struct Directory_entry* dir_e;
+
+    ofte = &OFT[0];
+    seek(0, 0);
+
+    while (ofte->current_position < ofte->size){
+        dir_e = &ofte->buffer[ofte->current_position % BLOCK_SIZE];
+        if(*(int *)(dir_e->name)){
+            fd = &FDT[dir_e->fd];
+            printf("%s %d\n", dir_e->name, fd->size);
+        }
+        seek(0, ofte->current_position + sizeof(struct Directory_entry));
+    }
+}
+
 int main(){
    
 }
