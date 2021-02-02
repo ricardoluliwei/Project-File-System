@@ -165,11 +165,6 @@ void seek(int i, int p){
         return;
     }
 
-    if(p > MAX_FILE_SIZE){
-        perror("Current position is past the end of file!\n");
-        return;
-    }
-
     int block_number;
     int previous_block_number;
     struct OFT_entry *ofte;
@@ -179,6 +174,11 @@ void seek(int i, int p){
     fd = &FDT[ofte->fd];
     block_number = p / BLOCK_SIZE;
     previous_block_number = ofte->current_position / BLOCK_SIZE;
+
+    if(p > fd->size){
+        perror("Current position is past the end of file!\n");
+        return;
+    }
 
     if(block_number >= 3){
         write_block(fd->block[previous_block_number], ofte->buffer);
