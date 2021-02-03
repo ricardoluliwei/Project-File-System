@@ -117,20 +117,28 @@ void init(){
 
 }
 
+// memory access functions
+void read_memory(int m, int n){
+    if(m + n > BLOCK_SIZE){
+        n = BLOCK_SIZE - m;
+    }
 
-// OFT functions
-void load_buffer(int OFT_index){
-    struct File_descriptor *fd;
-    struct OFT_entry *ofte;
-    int block_number;
+    char buf[n + 1];
+    memcpy(buf, &M[m], n);
+    buf[n] = 0;
+    printf("%s\n", buf);
+}
 
-    ofte = &OFT[OFT_index];
-    fd = &FDT[ofte->fd];
+void write_memory(int m, char* s){
+    int n;
+    for(n = 0; s[n]; n++);
 
-    block_number = ofte->current_position / BLOCK_SIZE;
+    if(m + n > BLOCK_SIZE){
+        n = BLOCK_SIZE - m;
+    }
 
-    if(block_number < 3)
-        read_block(fd->block[block_number], ofte->buffer);
+    memcpy(&M[m], s, n);
+    
 }
 
 // directory functions
@@ -157,6 +165,7 @@ int exists(char* name){
 
     return 0;
 }
+
 
 // User Interface
 void seek(int i, int p){

@@ -38,8 +38,11 @@ int exists(char* name);
 
 
 // memory access functions
-void read_memory();
-void write_memory();
+void read_memory(int m, int n);
+void write_memory(int m, char* s);
+
+void save(char* f);
+void restore(char* f);
 
 struct File_descriptor{
     int size; // 
