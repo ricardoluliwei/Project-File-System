@@ -610,6 +610,10 @@ int main(){
             token = strtok(NULL, spliter);
             m = atoi(token);
             s = strtok(NULL, " ");
+            // strinp
+            if(s[strlen(s) - 1] == '\n'){
+                s[strlen(s) - 1] = 0;
+            }
             write_memory(m, s);
             continue;
         }
