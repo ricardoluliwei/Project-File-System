@@ -605,7 +605,7 @@ int main(){
             token = strtok(NULL, spliter);
             m = atoi(token);
             token = strtok(NULL, spliter);
-            m = atoi(token);
+            n = atoi(token);
             read_memory(m, n);
             continue;
         }
