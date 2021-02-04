@@ -421,7 +421,7 @@ int fs_open(char* name){
 
     read_block(fd->block[0], ofte->buffer);
 
-    printf("%s opened %d", name, j);
+    printf("%s opened %d\n", name, j);
     return j;
 }
 
