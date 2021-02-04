@@ -30,7 +30,7 @@ void write_block(int b, void* src){
 // Bit map functions
 int read_bit_map(int position){
     if(position < 0 || position > 63)
-        perror("Bit map access out of boundary!");
+        printf("Bit map access out of boundary!");
 
     int byte_offset = position / BIT_MAP_SIZE;
     int bit_offset = position % BIT_MAP_SIZE;
@@ -44,7 +44,7 @@ int read_bit_map(int position){
 // Value can be 0 or 1, assigned to the bit map
 void write_bit_map(int position, int value){
     if(position < 0 || position > 63)
-        perror("Bit map access out of boundary!");
+        printf("Bit map access out of boundary!");
     
     int byte_offset = position / BIT_MAP_SIZE;
     int bit_offset = position % BIT_MAP_SIZE;
@@ -207,7 +207,7 @@ int exists(char* name){
 // User Interface
 void seek(int i, int p){
     if (p < 0){
-        perror("Current position can not be negative!\n");
+        printf("Current position can not be negative!\n");
         return;
     }
 
@@ -222,7 +222,7 @@ void seek(int i, int p){
     previous_block_number = ofte->current_position / BLOCK_SIZE;
 
     if(p > ofte->size){
-        perror("Current position is past the end of file!\n");
+        printf("Current position is past the end of file!\n");
         return;
     }
 
@@ -239,7 +239,7 @@ void seek(int i, int p){
 
 void create(char* name){
     if(exists(name)){
-        perror("Duplicate file name!\n");
+        printf("Duplicate file name!\n");
         return;
     }
 
@@ -254,7 +254,7 @@ void create(char* name){
     dir = &FDT[0];
 
     if(dir->size == MAX_FILE_SIZE){
-        perror("No free directory entry found!\n");
+        printf("No free directory entry found!\n");
         return;
     }
 
@@ -266,7 +266,7 @@ void create(char* name){
         }
     }
     if(i == MAX_FILES){
-        perror("Too many files");
+        printf("Too many files");
         return;
     }
 
@@ -291,7 +291,7 @@ void create(char* name){
         // allocate a new block for the directory
         block_number = dir->size / BLOCK_SIZE + 1;
         if((dir->block[block_number] = get_empty_block()) == -1){
-            perror("Disk full!\n");
+            printf("Disk full!\n");
             return;
         }
     }
@@ -318,7 +318,7 @@ void destroy(char* name){
     fd_index = exists(name);
     if(fd_index == -1){
         // name does not exits;
-        perror("File does not exist!\n");
+        printf("File does not exist!\n");
         return;
     }
 
@@ -330,7 +330,7 @@ void destroy(char* name){
     // check if the file is opened.
     for(i = 0; i < 4; i++){
         if(OFT[i].fd == fd_index){
-            perror("Can not destroy file because it is opened!\n");
+            printf("Can not destroy file because it is opened!\n");
             return;
         }
     }
@@ -358,7 +358,7 @@ int fs_open(char* name){
     int j;
 
     if((fd_index = exists(name)) == -1){
-        perror("File does not exist!\n");
+        printf("File does not exist!\n");
         return -1;
     }
 
@@ -369,7 +369,7 @@ int fs_open(char* name){
         }
     }
     if(j == 4){
-        perror("Too many files open!\n");
+        printf("Too many files open!\n");
         return -1;
     }
 
@@ -389,7 +389,7 @@ int fs_open(char* name){
 
 void fs_close(int i){
     if(i < 1 || i > 3){
-        perror("Invalid OFT index!\n");
+        printf("Invalid OFT index!\n");
         return;
     }
 
@@ -408,12 +408,12 @@ void fs_close(int i){
 
 void fs_read(int i, int m, int n){
     if(i < 1 || i > 3){
-        perror("Invalid OFT index!\n");
+        printf("Invalid OFT index!\n");
         return;
     }
 
     if(m + n > BLOCK_SIZE){
-        perror("Not enough memory!\n");
+        printf("Not enough memory!\n");
         return;
     }
 
@@ -456,7 +456,7 @@ void fs_read(int i, int m, int n){
 
 void fs_write(int i, int m, int n){
     if(i < 1 || i > 3){
-        perror("Invalid OFT index!\n");
+        printf("Invalid OFT index!\n");
         return;
     }
 
