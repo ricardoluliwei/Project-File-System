@@ -363,7 +363,7 @@ int fs_open(char* name){
     }
 
     for(j = 0; j < 4; j++){
-        if(OFT[j].size == -1){
+        if(OFT[j].current_position == -1){
             ofte = &OFT[j];
             break;
         }
