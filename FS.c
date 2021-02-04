@@ -91,6 +91,11 @@ int get_empty_block(){
 void init(){
     int i;
 
+    memset(D, 0, BLOCK_SIZE * NUMBER_OF_BLOCKS);
+    memset(M, 0, BLOCK_SIZE);
+    memset(FDT, 0, MAX_FILES * sizeof(struct File_descriptor));
+    memset(bit_map, 0, BLOCK_SIZE);
+    memset(OFT, 0, 4 * sizeof(struct OFT_entry));
     // Block from 0 to 7 allocated, 0 is bit map, 1 - 6 are file 
     // descriptors, 7 is the directory's first block
     for(i=0; i < 8; i++)
@@ -157,14 +162,21 @@ void save(char* f){
     }
     
     fwrite(D, BLOCK_SIZE, NUMBER_OF_BLOCKS, fp);
+    fclose(fp);
 }
 
 void restore(char* f){
     FILE *fp;
     void *block_pointer;
     int i;
+    struct File_descriptor *dir;
 
     fp = fopen(f, "r");
+    memset(D, 0, BLOCK_SIZE * NUMBER_OF_BLOCKS);
+    memset(M, 0, BLOCK_SIZE);
+    memset(FDT, 0, MAX_FILES * sizeof(struct File_descriptor));
+    memset(bit_map, 0, BLOCK_SIZE);
+    memset(OFT, 0, 4 * sizeof(struct OFT_entry));
 
     fread(D, BLOCK_SIZE, NUMBER_OF_BLOCKS, fp); 
     block_pointer = &FDT[0];
@@ -176,6 +188,18 @@ void restore(char* f){
         block_pointer += BLOCK_SIZE;
     }
     
+    // restore directory
+    dir = &FDT[0];
+    // set OFT[0] to the directory
+    OFT[0].fd = 0;
+    OFT[0].size = dir->size;
+    OFT[0].current_position = 0;
+
+    // set OFT current positon to -1 to mark free
+    for(i = 1; i < 4; i++)
+        OFT[i].current_position = -1;
+    
+    fclose(fp);
 }
 
 // directory functions
@@ -631,6 +655,9 @@ int main(){
             f = strtok(NULL, spliter);
             restore(f);
             continue;
+        }
+        if(strcmp(token, "quit") == 0){
+            break;
         }
     }
    
