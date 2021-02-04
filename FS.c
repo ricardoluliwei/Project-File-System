@@ -287,11 +287,6 @@ void create(char* name){
     ofte = &OFT[0];
     dir = &FDT[0];
 
-    if(dir->size == MAX_FILE_SIZE){
-        printf("error\n");
-        return;
-    }
-
     // find an empty fd
     for(i = 0; i < MAX_FILES; i++){
         if(FDT[i].size == -1){
@@ -312,12 +307,16 @@ void create(char* name){
             memcpy(dir_e->name, name, 4);
             dir_e->fd = fd_index;
             FDT[fd_index].size = 0; // allocate the fd for the new file
+            printf("%s created\n", name);
             return;
         }
     }
 
     // if the directory size need to increase
-
+    if(dir->size == MAX_FILE_SIZE){
+        printf("error\n");
+        return;
+    }
 
     // if need to allocate a new block for the directory
     if((dir->size + 8) / BLOCK_SIZE != dir->size / BLOCK_SIZE){
@@ -581,7 +580,7 @@ void directory(){
 int main(){
     char buffer[BLOCK_SIZE];
     char* token;
-    char* spliter = " \n";
+    char* spliter = " \r\n";
     while (1){
         if(!fgets(buffer, BLOCK_SIZE, stdin)){
             break;
