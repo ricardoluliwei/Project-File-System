@@ -207,7 +207,7 @@ void restore(char* f){
 // directory functions
 
 // return the file descriptor if the name exists,
-// otherwise, return 0.
+// otherwise, return -1.
 int exists(char* name){
     struct Directory_entry* dir_e;
     struct OFT_entry* ofte;
@@ -226,7 +226,7 @@ int exists(char* name){
             return dir_e->fd;  
     }
 
-    return 0;
+    return -1;
 }
 
 
@@ -272,7 +272,7 @@ void seek_with_message(int i, int p){
 }
 
 void create(char* name){
-    if(exists(name)){
+    if(exists(name) == -1){
         printf("error\n");
         return;
     }
