@@ -524,11 +524,6 @@ void fs_write(int i, int m, int n){
     // write until the memory ends/
     if(m + n > BLOCK_SIZE)
         n = BLOCK_SIZE - m;
-
-    // change the file size if need
-    if(ofte->current_position + n > ofte->size){
-        ofte->size = ofte->current_position + n;
-    }
     
     while (byte_copied < n){ 
         bytes = 0;
@@ -546,7 +541,11 @@ void fs_write(int i, int m, int n){
             // if we don't need to copy next block
             bytes = n - byte_copied;
         }
-
+        // change the file size if need
+        if(ofte->current_position + bytes > ofte->size){
+            ofte->size = ofte->current_position + bytes;
+            fd->size = ofte->size;
+        }
         // copy
         memcpy(&(ofte->buffer[ofte->current_position]), &M[m], bytes);
         byte_copied += bytes;
