@@ -400,9 +400,10 @@ void fs_close(int i){
     fd = &FDT[ofte->fd];
 
     write_block(fd->block[ofte->current_position / BLOCK_SIZE], ofte->buffer);
+    memset(ofte->buffer, 0, BLOCK_SIZE);
     fd->size = ofte->size;
     ofte->current_position = -1;
-
+    ofte->fd = 0;
     return;
 }
 
