@@ -286,7 +286,7 @@ void create(char* name){
 
 
     // if need to allocate a new block for the directory
-    if(dir->size % BLOCK_SIZE == 0){
+    if((dir->size + 8) / BLOCK_SIZE != dir->size / BLOCK_SIZE){
         // If this block is full
         // allocate a new block for the directory
         block_number = dir->size / BLOCK_SIZE + 1;
