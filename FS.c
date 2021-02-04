@@ -587,6 +587,9 @@ int main(){
         fgets(buffer, BLOCK_SIZE, stdin);
         
         token = strtok(buffer, spliter);
+        if(!token){
+            continue;
+        }
         if(strcmp(token, "cr") == 0){
             token = strtok(NULL, spliter);
             create(token);
