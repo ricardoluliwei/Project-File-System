@@ -13,10 +13,10 @@
 
 unsigned char D[NUMBER_OF_BLOCKS][BLOCK_SIZE]; // Disk
 unsigned char M[BLOCK_SIZE]; // main memory
-struct OFT_entry OFT[4]; // open file table
 
+struct OFT_entry OFT[4]; // open file table
 struct File_descriptor FDT[MAX_FILES]; // file descriptor table
-unsigned char bit_map[BIT_MAP_SIZE];
+unsigned char bit_map[BLOCK_SIZE];
 
 // Disk access functions
 void read_block(int b, void* dst){
@@ -141,6 +141,43 @@ void write_memory(int m, char* s){
     
 }
 
+void save(char* f){
+    FILE *fp;
+    void *block_pointer;
+    int i;
+
+    fp = fopen(f, "w"); 
+    block_pointer = &FDT[0];
+    // wirte first 7 blocks into D
+    write_block(0, bit_map);
+
+    for (i = 1; i < 7; i++){
+        write_block(i, block_pointer);
+        block_pointer += BLOCK_SIZE;
+    }
+    
+    fwrite(D, BLOCK_SIZE, NUMBER_OF_BLOCKS, fp);
+}
+
+void restore(char* f){
+    FILE *fp;
+    void *block_pointer;
+    int i;
+
+    fp = fopen(f, "r");
+
+    fread(D, BLOCK_SIZE, NUMBER_OF_BLOCKS, fp); 
+    block_pointer = &FDT[0];
+
+    read_block(0, bit_map);
+
+    for (i = 1; i < 7; i++){
+        read_block(i, block_pointer);
+        block_pointer += BLOCK_SIZE;
+    }
+    
+}
+
 // directory functions
 
 // return the file descriptor if the name exists,
@@ -157,7 +194,7 @@ int exists(char* name){
     // Loop on the directory
     for(i = 0; i * sizeof(struct Directory_entry) < fd->size; i++){
         seek(0, i * sizeof(struct Directory_entry));
-        dir_e = &ofte->buffer[ofte->current_position % BLOCK_SIZE];
+        dir_e = (struct Directory_entry*)&ofte->buffer[ofte->current_position % BLOCK_SIZE];
 
         if(strncmp(dir_e->name, name, 4) == 0)
             return dir_e->fd;  
@@ -235,7 +272,7 @@ void create(char* name){
 
     for(i = 0; i * sizeof(struct Directory_entry) < dir->size; i++){
         seek(0, i * sizeof(struct Directory_entry));
-        dir_e = &ofte->buffer[ofte->current_position % BLOCK_SIZE];
+        dir_e = (struct Directory_entry*)&ofte->buffer[ofte->current_position % BLOCK_SIZE];
         if(*(int*)(dir_e->name) == 0){
             // find an empty directory entry
             memcpy(dir_e->name, name, 4);
@@ -253,7 +290,7 @@ void create(char* name){
         // If this block is full
         // allocate a new block for the directory
         block_number = dir->size / BLOCK_SIZE + 1;
-        if(dir->block[block_number] = get_empty_block() == -1){
+        if((dir->block[block_number] = get_empty_block()) == -1){
             perror("Disk full!\n");
             return;
         }
@@ -261,7 +298,7 @@ void create(char* name){
 
     // set up the directory entry
     seek(0, dir->size);
-    dir_e = &ofte->buffer[dir->size % BLOCK_SIZE];
+    dir_e = (struct Directory_entry*)&ofte->buffer[dir->size % BLOCK_SIZE];
     memcpy(dir_e->name, name, 4);
     dir_e->fd = fd_index;
     FDT[fd_index].size = 0;
@@ -286,13 +323,13 @@ void destroy(char* name){
     }
 
     // find the directory entry that should be deleted
-    dir_e = &OFT[0].buffer[OFT[0].current_position % BLOCK_SIZE];
+    dir_e = (struct Directory_entry*)&OFT[0].buffer[OFT[0].current_position % BLOCK_SIZE];
     // find the file descriptor that should be deleted
     fd = &FDT[fd_index];
 
     // check if the file is opened.
     for(i = 0; i < 4; i++){
-        if(OFT[i].fd = fd_index){
+        if(OFT[i].fd == fd_index){
             perror("Can not destroy file because it is opened!\n");
             return;
         }
@@ -313,17 +350,17 @@ void destroy(char* name){
 
 
 // return the OFT index of a opened file, return -1 if error
-int open(char* name){
+int fs_open(char* name){
     struct OFT_entry* ofte;
     struct File_descriptor* fd;
     int fd_index;
     int i;
     int j;
 
-    if(fd_index = exists(name) == -1){
+    if((fd_index = exists(name)) == -1){
         perror("File does not exist!\n");
         return -1;
-    }    
+    }
 
     for(j = 0; j < 4; j++){
         if(OFT[j].size == -1){
@@ -346,13 +383,13 @@ int open(char* name){
         fd->block[0] = get_empty_block();
 
     read_block(fd->block[0], ofte->buffer);
-    
+
     return j;
 }
 
-void close(int i){
+void fs_close(int i){
     if(i < 1 || i > 3){
-        perror("Invalid OFT index to close!\n");
+        perror("Invalid OFT index!\n");
         return;
     }
 
@@ -369,9 +406,9 @@ void close(int i){
     return;
 }
 
-void read(int i, int m, int n){
+void fs_read(int i, int m, int n){
     if(i < 1 || i > 3){
-        perror("Invalid OFT index to close!\n");
+        perror("Invalid OFT index!\n");
         return;
     }
 
@@ -410,16 +447,16 @@ void read(int i, int m, int n){
         }
 
         // copy
-        memcpy(M[m], ofte->buffer[ofte->current_position], bytes);
+        memcpy(&M[m], &(ofte->buffer[ofte->current_position]), bytes);
         byte_copied += bytes;
         seek(ofte->fd, ofte->current_position + bytes);
     }
     
 }
 
-void write(int i, int m, int n){
+void fs_write(int i, int m, int n){
     if(i < 1 || i > 3){
-        perror("Invalid OFT index to close!\n");
+        perror("Invalid OFT index!\n");
         return;
     }
 
@@ -463,7 +500,7 @@ void write(int i, int m, int n){
         }
 
         // copy
-        memcpy(ofte->buffer[ofte->current_position], M[m], bytes);
+        memcpy(&(ofte->buffer[ofte->current_position]), &M[m], bytes);
         byte_copied += bytes;
         seek(ofte->fd, ofte->current_position + bytes);
     }
@@ -478,7 +515,7 @@ void directory(){
     seek(0, 0);
 
     while (ofte->current_position < ofte->size){
-        dir_e = &ofte->buffer[ofte->current_position % BLOCK_SIZE];
+        dir_e = (struct Directory_entry*)&ofte->buffer[ofte->current_position % BLOCK_SIZE];
         if(*(int *)(dir_e->name)){
             fd = &FDT[dir_e->fd];
             printf("%s %d\n", dir_e->name, fd->size);
@@ -487,6 +524,107 @@ void directory(){
     }
 }
 
+
+// presentation shell
 int main(){
+    const char prompt[2] = "$";
+    char buffer[BLOCK_SIZE];
+    char* token;
+    char* spliter = " \n";
+    while (1){
+        printf(prompt);
+        fgets(buffer, BLOCK_SIZE, stdin);
+        
+        token = strtok(buffer, spliter);
+        if(strcmp(token, "cr") == 0){
+            token = strtok(NULL, spliter);
+            create(token);
+            continue;
+        }
+        if(strcmp(token, "de") == 0){
+            token = strtok(NULL, spliter);
+            destroy(token);
+            continue;
+        }
+        if(strcmp(token, "op") == 0){
+            token = strtok(NULL, spliter);
+            fs_open(token);
+            continue;
+        }
+        if(strcmp(token, "cl") == 0){
+            token = strtok(NULL, spliter);
+            int i = atoi(token);
+            fs_close(i);
+            continue;
+        }
+        if(strcmp(token, "rd") == 0){
+            int i, m, n;
+            token = strtok(NULL, spliter);
+            i = atoi(token);
+            token = strtok(NULL, spliter);
+            m = atoi(token);
+            token = strtok(NULL, spliter);
+            n = atoi(token);
+            fs_read(i, m, n);
+            continue;
+        }
+        if(strcmp(token, "wr") == 0){
+            int i, m, n;
+            token = strtok(NULL, spliter);
+            i = atoi(token);
+            token = strtok(NULL, spliter);
+            m = atoi(token);
+            token = strtok(NULL, spliter);
+            n = atoi(token);
+            fs_write(i, m, n);
+            continue;
+        }
+        if(strcmp(token, "sk") == 0){
+            int i, p;
+            token = strtok(NULL, spliter);
+            i = atoi(token);
+            token = strtok(NULL, spliter);
+            p = atoi(token);
+            seek(i, p);
+            continue;
+        }
+        if(strcmp(token, "dr") == 0){
+            directory();
+            continue;
+        }
+        if(strcmp(token, "in") == 0){
+            init();
+        }
+        if(strcmp(token, "rm") == 0){
+            int m, n;
+            token = strtok(NULL, spliter);
+            m = atoi(token);
+            token = strtok(NULL, spliter);
+            m = atoi(token);
+            read_memory(m, n);
+            continue;
+        }
+        if(strcmp(token, "wm") == 0){
+            int m;
+            char* s;
+            token = strtok(NULL, spliter);
+            m = atoi(token);
+            s = strtok(NULL, " ");
+            write_memory(m, s);
+            continue;
+        }
+        if(strcmp(token, "sv") == 0){
+            char* f;
+            f = strtok(NULL, spliter);
+            save(f);
+            continue;
+        }
+        if(strcmp(token, "ld") == 0){
+            char* f;
+            f = strtok(NULL, spliter);
+            restore(f);
+            continue;
+        }
+    }
    
 }

@@ -12,10 +12,10 @@
 void seek(int i, int p);
 void create(char* name);
 void destroy(char* name);
-int open(char* name);
-void close(int i);
-void read(int i, int m, int n);
-void write(int i, int m, int n);
+int fs_open(char* name);
+void fs_close(int i);
+void fs_read(int i, int m, int n);
+void fs_write(int i, int m, int n);
 void directory();
 
 // Disk access functions
