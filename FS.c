@@ -24,7 +24,7 @@ void read_block(int b, void* dst){
 }
 
 void write_block(int b, void* src){
-    memcpy(src, &D[b], BLOCK_SIZE);
+    memcpy(&D[b], src, BLOCK_SIZE);
 }
 
 // Bit map functions
@@ -404,6 +404,7 @@ void fs_close(int i){
     fd->size = ofte->size;
     ofte->current_position = -1;
     ofte->fd = 0;
+    ofte->size = 0;
     return;
 }
 
