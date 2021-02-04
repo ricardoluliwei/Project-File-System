@@ -577,12 +577,10 @@ void directory(){
 
 // presentation shell
 int main(){
-    const char prompt[2] = "$ ";
     char buffer[BLOCK_SIZE];
     char* token;
     char* spliter = " \n";
     while (1){
-        printf(prompt);
         if(!fgets(buffer, BLOCK_SIZE, stdin)){
             break;
         }
