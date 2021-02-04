@@ -119,7 +119,8 @@ void init(){
     // set FDT size to -1 to mark free
     for(i = 1; i < MAX_FILES; i++)
         FDT[i].size = -1;
-
+    
+    printf("system initialized.\n");
 }
 
 // memory access functions
@@ -144,6 +145,7 @@ void write_memory(int m, char* s){
 
     memcpy(&M[m], s, n);
     
+    printf("%s bytes written to M\n", n);
 }
 
 void save(char* f){
@@ -229,10 +231,10 @@ int exists(char* name){
 
 
 // User Interface
-void seek(int i, int p){
+int seek(int i, int p){
     if (p < 0){
         printf("Current position can not be negative!\n");
-        return;
+        return 0;
     }
 
     int block_number;
@@ -247,7 +249,7 @@ void seek(int i, int p){
 
     if(p > ofte->size){
         printf("Current position is past the end of file!\n");
-        return;
+        return 0;
     }
 
     if(block_number >= 3){
@@ -259,6 +261,14 @@ void seek(int i, int p){
     }
         
     ofte->current_position = p;
+
+    return 1;
+}
+
+void seek_with_message(int i, int p){
+    if(seek(i, p)){
+        printf("position is %d\n", p);
+    }
 }
 
 void create(char* name){
@@ -331,6 +341,7 @@ void create(char* name){
     dir->size += 8;
     ofte->size += 8;
     
+    printf("%s created\n", name);
 }
 
 void destroy(char* name){
@@ -370,6 +381,8 @@ void destroy(char* name){
 
     // mark the directory entry as free
     memset(dir_e->name, 0, 4);
+
+    printf("%s destroyed\n", name);
 }
 
 
@@ -408,6 +421,7 @@ int fs_open(char* name){
 
     read_block(fd->block[0], ofte->buffer);
 
+    printf("%s opened %d", name, j);
     return j;
 }
 
@@ -429,6 +443,8 @@ void fs_close(int i){
     ofte->current_position = -1;
     ofte->fd = 0;
     ofte->size = 0;
+
+    printf("%d closed\n", i);
     return;
 }
 
@@ -478,6 +494,7 @@ void fs_read(int i, int m, int n){
         seek(ofte->fd, ofte->current_position + bytes);
     }
     
+    printf("%d bytes read from %d", byte_copied, i);
 }
 
 void fs_write(int i, int m, int n){
@@ -534,6 +551,8 @@ void fs_write(int i, int m, int n){
         memcpy(&(ofte->buffer[ofte->current_position]), &M[m], bytes);
         byte_copied += bytes;
         seek(ofte->fd, ofte->current_position + bytes);
+
+        printf("%d bytes written to %d", byte_copied, i);
     }
 }
 
@@ -549,10 +568,11 @@ void directory(){
         dir_e = (struct Directory_entry*)&ofte->buffer[ofte->current_position % BLOCK_SIZE];
         if(*(int *)(dir_e->name)){
             fd = &FDT[dir_e->fd];
-            printf("%s %d\n", dir_e->name, fd->size);
+            printf("%s %d ", dir_e->name, fd->size);
         }
         seek(0, ofte->current_position + sizeof(struct Directory_entry));
     }
+    printf("\n");
 }
 
 
@@ -616,7 +636,7 @@ int main(){
             i = atoi(token);
             token = strtok(NULL, spliter);
             p = atoi(token);
-            seek(i, p);
+            seek_with_message(i, p);
             continue;
         }
         if(strcmp(token, "dr") == 0){

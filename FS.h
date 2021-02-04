@@ -9,7 +9,8 @@
 
 
 // User Interface
-void seek(int i, int p);
+int seek(int i, int p);
+void seek_with_message(int i, int p);
 void create(char* name);
 void destroy(char* name);
 int fs_open(char* name);
