@@ -532,7 +532,7 @@ void directory(){
 
 // presentation shell
 int main(){
-    const char prompt[2] = "$";
+    const char prompt[2] = "$ ";
     char buffer[BLOCK_SIZE];
     char* token;
     char* spliter = " \n";
