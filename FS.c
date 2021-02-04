@@ -120,7 +120,7 @@ void init(){
     for(i = 1; i < MAX_FILES; i++)
         FDT[i].size = -1;
     
-    printf("system initialized.\n");
+    printf("system initialized\n");
 }
 
 // memory access functions
