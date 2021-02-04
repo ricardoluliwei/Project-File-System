@@ -490,8 +490,9 @@ void fs_read(int i, int m, int n){
 
         // copy
         memcpy(&M[m], &(ofte->buffer[ofte->current_position % BLOCK_SIZE]), bytes);
-        byte_copied += bytes;
         seek(ofte->fd, ofte->current_position + bytes);
+        byte_copied += bytes;
+        m += bytes;
     }
     
     printf("%d bytes read from %d\n", byte_copied, i);
@@ -548,8 +549,9 @@ void fs_write(int i, int m, int n){
         }
         // copy
         memcpy(&(ofte->buffer[ofte->current_position % BLOCK_SIZE]), &M[m], bytes);
-        byte_copied += bytes;
         seek(ofte->fd, ofte->current_position + bytes);
+        byte_copied += bytes;
+        m += bytes;
     }
 
     printf("%d bytes written to %d\n", byte_copied, i);
@@ -587,6 +589,7 @@ int main(){
         
         token = strtok(buffer, spliter);
         if(!token){
+            printf("\n");
             continue;
         }
         if(strcmp(token, "cr") == 0){
