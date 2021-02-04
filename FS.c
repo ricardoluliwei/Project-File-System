@@ -145,7 +145,7 @@ void write_memory(int m, char* s){
 
     memcpy(&M[m], s, n);
     
-    printf("%s bytes written to M\n", n);
+    printf("%d bytes written to M\n", n);
 }
 
 void save(char* f){
