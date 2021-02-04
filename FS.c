@@ -221,7 +221,7 @@ void seek(int i, int p){
     block_number = p / BLOCK_SIZE;
     previous_block_number = ofte->current_position / BLOCK_SIZE;
 
-    if(p > fd->size){
+    if(p > ofte->size){
         perror("Current position is past the end of file!\n");
         return;
     }
@@ -481,6 +481,11 @@ void fs_write(int i, int m, int n){
     // write until the memory ends/
     if(m + n > BLOCK_SIZE)
         n = BLOCK_SIZE - m;
+
+    // change the file size if need
+    if(ofte->current_position + n > ofte->size){
+        ofte->size = ofte->current_position + n;
+    }
     
     while (byte_copied < n){ 
         bytes = 0;
@@ -609,11 +614,7 @@ int main(){
             char* s;
             token = strtok(NULL, spliter);
             m = atoi(token);
-            s = strtok(NULL, " ");
-            // strinp
-            if(s[strlen(s) - 1] == '\n'){
-                s[strlen(s) - 1] = 0;
-            }
+            s = strtok(NULL, spliter);
             write_memory(m, s);
             continue;
         }
