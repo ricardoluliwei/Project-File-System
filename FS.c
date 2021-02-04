@@ -390,6 +390,7 @@ void destroy(char* name){
 int fs_open(char* name){
     struct OFT_entry* ofte;
     struct File_descriptor* fd;
+    
     int fd_index;
     int i;
     int j;
@@ -401,8 +402,13 @@ int fs_open(char* name){
     }
 
     for(j = 0; j < 4; j++){
-        if(OFT[j].current_position == -1){
-            ofte = &OFT[j];
+        ofte = &OFT[j];
+        // check if it is opened
+        if(ofte->fd == fd_index){
+            printf("error\n");
+            return -1;
+        }
+        if(ofte->current_position == -1){
             break;
         }
     }
@@ -438,6 +444,11 @@ void fs_close(int i){
     ofte = &OFT[i];
     fd = &FDT[ofte->fd];
 
+    if(ofte->current_position == -1){
+        printf("error\n");
+        return;
+    }
+
     write_block(fd->block[ofte->current_position / BLOCK_SIZE], ofte->buffer);
     memset(ofte->buffer, 0, BLOCK_SIZE);
     fd->size = ofte->size;
@@ -468,6 +479,10 @@ void fs_read(int i, int m, int n){
 
     ofte = &OFT[i];
     fd = &FDT[ofte->fd];
+
+    if(ofte->current_position == -1){
+        printf("error\n");
+    }
     
     seek(ofte->fd, ofte->current_position);
     byte_copied = 0;
