@@ -489,7 +489,7 @@ void fs_read(int i, int m, int n){
         }
 
         // copy
-        memcpy(&M[m], &(ofte->buffer[ofte->current_position]), bytes);
+        memcpy(&M[m], &(ofte->buffer[ofte->current_position % BLOCK_SIZE]), bytes);
         byte_copied += bytes;
         seek(ofte->fd, ofte->current_position + bytes);
     }
@@ -534,7 +534,7 @@ void fs_write(int i, int m, int n){
             // if we need to copy next block
             bytes = BLOCK_SIZE - (ofte->current_position % BLOCK_SIZE);
             // check if the next block exists
-            if(fd->block[current_block + 1]){
+            if(!fd->block[current_block + 1]){
                 fd->block[current_block + 1] = get_empty_block();
             }
         } else{
@@ -547,12 +547,12 @@ void fs_write(int i, int m, int n){
             fd->size = ofte->size;
         }
         // copy
-        memcpy(&(ofte->buffer[ofte->current_position]), &M[m], bytes);
+        memcpy(&(ofte->buffer[ofte->current_position % BLOCK_SIZE]), &M[m], bytes);
         byte_copied += bytes;
         seek(ofte->fd, ofte->current_position + bytes);
-
-        printf("%d bytes written to %d\n", byte_copied, i);
     }
+
+    printf("%d bytes written to %d\n", byte_copied, i);
 }
 
 void directory(){
