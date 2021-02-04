@@ -482,6 +482,7 @@ void fs_read(int i, int m, int n){
 
     if(ofte->current_position == -1){
         printf("error\n");
+        return;
     }
     
     seek(ofte->fd, ofte->current_position);
