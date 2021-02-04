@@ -494,7 +494,7 @@ void fs_read(int i, int m, int n){
         seek(ofte->fd, ofte->current_position + bytes);
     }
     
-    printf("%d bytes read from %d", byte_copied, i);
+    printf("%d bytes read from %d\n", byte_copied, i);
 }
 
 void fs_write(int i, int m, int n){
@@ -552,7 +552,7 @@ void fs_write(int i, int m, int n){
         byte_copied += bytes;
         seek(ofte->fd, ofte->current_position + bytes);
 
-        printf("%d bytes written to %d", byte_copied, i);
+        printf("%d bytes written to %d\n", byte_copied, i);
     }
 }
 
