@@ -272,7 +272,7 @@ void seek_with_message(int i, int p){
 }
 
 void create(char* name){
-    if(exists(name) == -1){
+    if(exists(name) != -1){
         printf("error\n");
         return;
     }
