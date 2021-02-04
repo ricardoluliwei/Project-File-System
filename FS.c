@@ -273,6 +273,7 @@ void seek_with_message(int i, int p){
 
 void create(char* name){
     if(exists(name) != -1){
+        // if exists
         printf("error\n");
         return;
     }
@@ -394,6 +395,7 @@ int fs_open(char* name){
     int j;
 
     if((fd_index = exists(name)) == -1){
+        // if doesn't exists
         printf("error\n");
         return -1;
     }
